@@ -83,6 +83,10 @@
 (defvar drag-stuff-after-drag-hook nil
   "Called after dragging occurs.")
 
+(defun drag-stuff--evil-p ()
+  "Predicate for checking if we're in evil visual state."
+  (and (bound-and-true-p evil-mode) (evil-visual-state-p)))
+
 (defun drag-stuff--kbd (key)
   "Key binding helper."
   (let ((mod (if (listp drag-stuff-modifier)
@@ -177,9 +181,12 @@
 
 (defun drag-stuff-lines-vertically (fn)
   "Yields variables used to drag lines vertically."
-  (let* ((deactivate-mark nil)
+  (let* ((evilp (drag-stuff--evil-p))
+         (vis-type (when evilp (evil-visual-type)))
+         (deactivate-mark nil)
          (mark-line (line-number-at-pos (mark)))
-         (point-line (line-number-at-pos (point)))
+         (point-line (line-number-at-pos
+                      (if evilp (evil-visual-goto-end) (point))))
          (mark-col (save-excursion (exchange-point-and-mark) (current-column)))
          (point-col (current-column))
          (bounds (drag-stuff-whole-lines-region))
@@ -193,7 +200,9 @@
     (exchange-point-and-mark)
     (goto-line point-line)
     (forward-line arg)
-    (move-to-column point-col)))
+    (move-to-column point-col)
+    (when evilp
+      (evil-visual-make-selection (mark) (point)))))
 
 (defun drag-stuff-drag-region-up (beg end arg)
   "Drags region between BEG and END ARG lines up."
