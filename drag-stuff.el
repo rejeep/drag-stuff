@@ -268,7 +268,11 @@
 (defun drag-stuff-word-horizontally (arg)
   "Drags word horizontally ARG times."
   (let ((old-point (point))
-        (offset (- (save-mark-and-excursion (forward-word) (point)) (point))))
+        (offset (if (> arg 0)
+                    (- (save-mark-and-excursion (forward-word) (point)) (point))
+                  (- (- (save-mark-and-excursion (forward-word) (point))
+                        (save-mark-and-excursion (backward-word (+ (abs arg) 1)) (point)))
+                     (- (point) (save-mark-and-excursion (backward-word) (point)))))))
     (condition-case err
         (progn
           (transpose-words arg)
