@@ -25,3 +25,14 @@ Feature: Drag word
     Then I should see "word1 word2 word3"
     And I should see message "Can not move word further to the right"
 
+  Scenario Outline: Remain at the same letter when dragging words
+    When I go to point "<before>"
+    And I drag word <direction>
+    Then I should see "word2 word1 word3"
+    And the cursor should be at point "<after>"
+
+    Examples:
+      | before | direction | after |
+      | 2      | right     | 8     |
+      | 8      | left      | 2     |
+
